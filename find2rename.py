@@ -133,18 +133,20 @@ def htmlRender():
     global globalFileDict
     htmlFile = open("result.html","w",encoding="utf-8")
     htmlFile.write('<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>重命名结果预览</title>\n</head>\n<body style="background-color: #fafafa">\n')
-    htmlFile.write('<div align="center"><h3>已匹配</h3></div>\n')
-    for x,y in globalFileDict.items():
-        if y[2]:
-            htmlFile.write(f'    <div align="center">\n        <img src="{needRenameFoldersName}/{x}" width="20%">\n')
-            htmlFile.write(f'        <img src="{sourceFileFoldersName}/{y[0]}" width="20%" height="20%">\n    </div>\n')
-            htmlFile.write(f'    <p align="center">[<font color="#00cf2c">{str(y[1])[0:5]}</font>] {x} --> {y[0]}"</p>\n')
-    htmlFile.write('<div align="center"><h3>可能结果</h3></div>\n')
-    for x,y in globalFileDict.items():
-        if float(y[1]) >= 0.0 and not y[2]:
-            htmlFile.write(f'    <div align="center">\n        <img src="{needRenameFoldersName}/{x}" width="20%">\n')
-            htmlFile.write(f'        <img src="{sourceFileFoldersName}/{y[0]}" width="20%" height="20%">\n    </div>\n')
-            htmlFile.write(f'    <p align="center">[<font color="#ffcc00">{str(y[1])[0:5]}</font>] {x} --> {y[0]}</p>\n')
+    if pairedFile >= 1:
+        htmlFile.write('<div align="center"><h3>已匹配</h3></div>\n')
+        for x,y in globalFileDict.items():
+            if y[2]:
+                htmlFile.write(f'    <div align="center">\n        <img src="{needRenameFoldersName}/{x}" width="20%">\n')
+                htmlFile.write(f'        <img src="{sourceFileFoldersName}/{y[0]}" width="20%" height="20%">\n    </div>\n')
+                htmlFile.write(f'    <p align="center">[<font color="#00cf2c">{str(y[1])[0:5]}</font>] {x} --> {y[0]}"</p>\n')
+    if unpairFile >= 1:
+        htmlFile.write('<div align="center"><h3>可能结果</h3></div>\n')
+        for x,y in globalFileDict.items():
+            if float(y[1]) >= 0.0 and not y[2]:
+                htmlFile.write(f'    <div align="center">\n        <img src="{needRenameFoldersName}/{x}" width="20%">\n')
+                htmlFile.write(f'        <img src="{sourceFileFoldersName}/{y[0]}" width="20%" height="20%">\n    </div>\n')
+                htmlFile.write(f'    <p align="center">[<font color="#ffcc00">{str(y[1])[0:5]}</font>] {x} --> {y[0]}</p>\n')
     htmlFile.write('</body>\n</html>')
     htmlFile.close()
     os.system("result.html")
