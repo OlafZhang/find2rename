@@ -1,10 +1,10 @@
-from resource.find2rename import *
+from Config_find2rename import *
 from colorama import init,Fore
 from rich.progress import Progress,TextColumn,TimeElapsedColumn,TimeRemainingColumn
 from skimage.metrics import structural_similarity as compare_ssim
 from PIL import Image  
 import numpy as np
-import os,time,random,sys,signal,threading,psutil,copy
+import os,time,random,sys,signal,threading,psutil,copy,base64
 init(autoreset=True)
 
 cpuUsage = 0.0
@@ -78,6 +78,8 @@ def renameFile(needRenameFoldersName,rollback=False):
             print(str(exc_type)+"\n"+str(exc_value))
     return
 def killThread(signum, frame):
+    if os.path.exists("result.html"):
+        os.remove("result.html")
     print("线程被中止")
     sys.exit(0)
 def getIndex(intIndex):
@@ -127,6 +129,26 @@ def askYou(question):
             return True
         elif userInput.lower() == "n" or userInput.lower() == "no":
             return False
+def htmlRender():
+    global globalFileDict
+    htmlFile = open("result.html","w",encoding="utf-8")
+    htmlFile.write('<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>重命名结果预览</title>\n</head>\n<body style="background-color: #fafafa">\n')
+    htmlFile.write('<div align="center"><h3>已匹配</h3></div>\n')
+    for x,y in globalFileDict.items():
+        if y[2]:
+            htmlFile.write(f'    <div align="center">\n        <img src="{needRenameFoldersName}/{x}" width="20%">\n')
+            htmlFile.write(f'        <img src="{sourceFileFoldersName}/{y[0]}" width="20%" height="20%">\n    </div>\n')
+            htmlFile.write(f'    <p align="center">[<font color="#00cf2c">{str(y[1])[0:5]}</font>] {x} --> {y[0]}"</p>\n')
+    htmlFile.write('<div align="center"><h3>可能结果</h3></div>\n')
+    for x,y in globalFileDict.items():
+        if float(y[1]) >= 0.0 and not y[2]:
+            htmlFile.write(f'    <div align="center">\n        <img src="{needRenameFoldersName}/{x}" width="20%">\n')
+            htmlFile.write(f'        <img src="{sourceFileFoldersName}/{y[0]}" width="20%" height="20%">\n    </div>\n')
+            htmlFile.write(f'    <p align="center">[<font color="#ffcc00">{str(y[1])[0:5]}</font>] {x} --> {y[0]}</p>\n')
+    htmlFile.write('</body>\n</html>')
+    htmlFile.close()
+    os.system("result.html")
+    return
 signal.signal(signal.SIGINT, killThread)
 
 for i in os.listdir(sourceFileFoldersName):
@@ -176,6 +198,7 @@ with Progress(TextColumn("运行SSIM结构相似性算法  "+"[progress.descript
         time.sleep(0.01)
 end_time = time.time()
 os.system("cls")
+htmlRender()
 print("汇总")
 for x,y in globalFileDict.items():
     pairedFile = pairedFile+1 if y[1] > 0.0 and y[2] == True else pairedFile
@@ -203,10 +226,13 @@ showPrefix = f"是否加重命名前缀：{Fore.YELLOW}否{Fore.RESET}" if prefi
 showPostfix = f"是否加重命名后缀：{Fore.YELLOW}否{Fore.RESET}" if postfix == "" else f"是否加重命名后缀：{Fore.YELLOW}是{Fore.RESET}({postfix})"
 print(f"{showPrefix}\n{showPostfix}")
 if pairedFile > 0:
+    print("重命名结果预览HTML页面已生成并打开")
     result = askYou("执行匹配文件和可能文件的修改？") if ifPossibleThenRename and unpairFile!=0 else askYou("执行匹配文件的修改？")
     if result:
         renameFile(needRenameFoldersName)
         result = askYou("修改完毕，是否执行回滚？")
         if result:
             renameFile(needRenameFoldersName,rollback=True)
+if os.path.exists("result.html"):
+    os.remove("result.html")
 print("程序退出")
