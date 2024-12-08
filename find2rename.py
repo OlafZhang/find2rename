@@ -130,7 +130,7 @@ def askYou(question):
         elif userInput.lower() == "n" or userInput.lower() == "no":
             return False
 def htmlRender():
-    global globalFileDict
+    global globalFileDict,pairedFile,unpairFile
     htmlFile = open("result.html","w",encoding="utf-8")
     htmlFile.write('<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>重命名结果预览</title>\n</head>\n<body style="background-color: #fafafa">\n')
     if pairedFile >= 1:
@@ -200,7 +200,6 @@ with Progress(TextColumn("运行SSIM结构相似性算法  "+"[progress.descript
         time.sleep(0.01)
 end_time = time.time()
 os.system("cls")
-htmlRender()
 print("汇总")
 for x,y in globalFileDict.items():
     pairedFile = pairedFile+1 if y[1] > 0.0 and y[2] == True else pairedFile
@@ -221,6 +220,7 @@ if unpairFile > 0:
     print(f"未匹配文件数量：{Fore.RED}{unpairFile}{Fore.RESET}")
 else:
     print(f"{Fore.GREEN}无未匹配的文件{Fore.RESET}")
+htmlRender()
 print(f"计算文件对/理论计算文件对/已减枝文件对：{calcFileCount}/{len(workItem)}/{pruningCount}")
 print(f"运行用时：{timeFormat(end_time-start_time)}\n相似阈值：{Fore.YELLOW}{threshold}{Fore.RESET}\n缩放等级：{Fore.YELLOW}{zoomLevel}{Fore.RESET}")
 print(f"待重命名/已匹配/未匹配：{len(needRenameFileList)}/{pairedFile}/{unpairFile}")
